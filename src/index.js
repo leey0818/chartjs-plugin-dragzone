@@ -1,15 +1,69 @@
 import Chart from 'chart.js';
+import throttle from 'lodash-es/throttle';
 
-var _isPointInArea = Chart.canvasHelpers._isPointInArea;
+const { _isPointInArea } = Chart.canvasHelpers;
 
-function getDragArea(beginPoint, endPoint) {
-  var offsetX = beginPoint.target.getBoundingClientRect().left;
-  var startX = Math.min(beginPoint.clientX, endPoint.clientX) - offsetX;
-  var endX = Math.max(beginPoint.clientX, endPoint.clientX) - offsetX;
+function getXAxis(chartInstance) {
+  var scales = chartInstance.scales;
+  var scaleIds = Object.keys(scales);
+  for (var i = 0; i < scaleIds.length; i++) {
+    var scale = scales[scaleIds[i]];
 
-  var offsetY = beginPoint.target.getBoundingClientRect().top;
-  var startY = Math.min(beginPoint.clientY, endPoint.clientY) - offsetY;
-  var endY = Math.max(beginPoint.clientY, endPoint.clientY) - offsetY;
+    if (scale.isHorizontal()) {
+      return scale;
+    }
+  }
+}
+
+function getYAxis(chartInstance) {
+  var scales = chartInstance.scales;
+  var scaleIds = Object.keys(scales);
+  for (var i = 0; i < scaleIds.length; i++) {
+    var scale = scales[scaleIds[i]];
+
+    if (!scale.isHorizontal()) {
+      return scale;
+    }
+  }
+}
+
+function isAllowVertical(direction) {
+  return direction === 'all' || direction === 'vertical';
+}
+
+function isAllowHorizontal(direction) {
+  return direction === 'all' || direction === 'horizontal';
+}
+
+/**
+* Get drag area
+* @param {Chart} chartInstance chart instance
+* @param {MouseEvent} beginPoint begin event
+* @param {MouseEvent} endPoint end event
+*/
+function getDragArea(chartInstance, beginPoint, endPoint) {
+  const props = chartInstance.$dragzone;
+  const options = props._options;
+
+  const xAxis = getXAxis(chartInstance);
+  const yAxis = getYAxis(chartInstance);
+
+  let startX = xAxis.left;
+  let endX = xAxis.right;
+  let startY = yAxis.top;
+  let endY = yAxis.bottom;
+
+  if (isAllowHorizontal(options.direction)) {
+    const offsetX = beginPoint.target.getBoundingClientRect().left;
+    startX = Math.min(beginPoint.clientX, endPoint.clientX) - offsetX;
+    endX = Math.max(beginPoint.clientX, endPoint.clientX) - offsetX;
+  }
+
+  if (isAllowVertical(options.direction)) {
+    const offsetY = beginPoint.target.getBoundingClientRect().top;
+    startY = Math.min(beginPoint.clientY, endPoint.clientY) - offsetY;
+    endY = Math.max(beginPoint.clientY, endPoint.clientY) - offsetY;
+  }
 
   return {
     startX, startY,
@@ -17,107 +71,132 @@ function getDragArea(beginPoint, endPoint) {
   };
 };
 
+/**
+* Get data for point
+* @param {Chart} chart Chart chartInstance
+* @param {ChartElement} point Chart point data
+*/
 function getPointData(chart, point) {
-  var datasetIndex = point._datasetIndex;
-  var dataIndex = point._index;
+  const datasetIndex = point._datasetIndex;
+  const dataIndex = point._index;
 
   return chart.data.datasets[datasetIndex].data[dataIndex];
 }
 
-var dragZonePlugin = {
+function isClickArea(direction, startX, endX, startY, endY) {
+  if (direction === 'all') return startX === endX && startY === endY;
+  if (direction === 'vertical') return startY === endY;
+  if (direction === 'horizontal') return startX === endX;
+  return false;
+}
+
+const dragZonePlugin = {
   id: 'dragzone',
 
-  beforeInit: function (chartInstance, pluginOptions) {
-    var node = chartInstance.ctx.canvas;
+  beforeInit(chartInstance) {
+    chartInstance.$dragzone = {};
 
-    chartInstance.$dragzone = {
-      _node: node,
+    const options = chartInstance.options.plugins.dragzone;
+    const props = chartInstance.$dragzone;
+    const node = chartInstance.ctx.canvas;
+    props._node = node;
+    props._options = options;
+
+    props._mouseDownHandler = function (evt) {
+      node.addEventListener('mousemove', props._mouseMoveHandler);
+      props._dragZoneStart = evt;
     };
 
-    chartInstance.$dragzone._mouseDownHandler = function (evt) {
-      node.addEventListener('mousemove', chartInstance.$dragzone._mouseMoveHandler);
-      chartInstance.$dragzone._dragZoneStart = evt;
-    };
+    props._mouseMoveHandler = function (evt) {
+      if (props._dragZoneStart) {
+        props._dragZoneEnd = evt;
 
-    chartInstance.$dragzone._mouseMoveHandler = function (evt) {
-      if (chartInstance.$dragzone._dragZoneStart) {
-        chartInstance.$dragzone._dragZoneEnd = evt;
-        chartInstance.update(0);
+        // throttle update every 100ms
+        throttle(() => {
+          chartInstance.update();
+        }, 100);
       }
     };
 
-    chartInstance.$dragzone._mouseUpHandler = function (evt) {
-      if (!chartInstance.$dragzone._dragZoneStart) {
+    props._mouseUpHandler = function (evt) {
+      if (!props._dragZoneStart) {
         return;
       }
 
-      node.removeEventListener('mousemove', chartInstance.$dragzone._mouseMoveHandler);
+      node.removeEventListener('mousemove', props._mouseMoveHandler);
 
-      var beginPoint = chartInstance.$dragzone._dragZoneStart;
-      var { startX, startY, endX, endY } = getDragArea(beginPoint, evt);
+      const beginPoint = props._dragZoneStart;
+      const { startX, startY, endX, endY } = getDragArea(chartInstance, beginPoint, evt);
 
-      chartInstance.$dragzone._dragZoneStart = null;
-      chartInstance.$dragzone._dragZoneEnd = null;
+      props._dragZoneStart = null;
+      props._dragZoneEnd = null;
 
-      var area = {
+      // ignore click only event
+      if (isClickArea(options.direction, startX, endX, startY, endY)) return;
+
+      const area = {
         left: startX,
         right: endX,
         top: startY,
         bottom: endY,
       };
 
-      var data = chartInstance.getDatasetMeta(0).data;
-      var points = [];
+      const data = chartInstance.getDatasetMeta(0).data;
+      const datasets = [];
 
       for (let i = 0; i < data.length; i++) {
-        var point = data[i];
+        const point = data[i];
 
+        // check point in drag area
         if (_isPointInArea(point._model, area)) {
-          points.push(getPointData(chartInstance, point));
+          let datas = datasets[point._datasetIndex];
+
+          if (datas === undefined) {
+            datas = [];
+            datasets[point._datasetIndex] = datas;
+          }
+
+          datas.push(getPointData(chartInstance, point));
         }
       }
 
-      console.log('contain points: ' + points.length);
-
-      // chartInstance.update(0);
+      if (typeof options.onDragSelection === 'function') {
+        options.onDragSelection(datasets);
+      }
     };
-  },
 
-  beforeUpdate: function (chart) {
-    var props = chart.$dragzone;
-    var node = props._node;
-
+    // add drag event listener
     node.addEventListener('mousedown', props._mouseDownHandler);
     node.ownerDocument.addEventListener('mouseup', props._mouseUpHandler);
   },
 
-  beforeDatasetsDraw: function (chartInstance) {
-    var ctx = chartInstance.ctx;
-    var props = chartInstance.$dragzone;
+  beforeDatasetsDraw(chartInstance) {
+    const props = chartInstance.$dragzone;
 
     if (props._dragZoneEnd) {
-      var beginPoint = props._dragZoneStart;
-      var endPoint = props._dragZoneEnd;
-      var { startX, startY, endX, endY } = getDragArea(beginPoint, endPoint);
+      const ctx = chartInstance.ctx;
+      const options = props._options;
+      const beginPoint = props._dragZoneStart;
+      const endPoint = props._dragZoneEnd;
+      const { startX, startY, endX, endY } = getDragArea(chartInstance, beginPoint, endPoint);
 
-      var rectWidth = endX - startX;
-      var rectHeight = endY - startY;
+      const rectWidth = endX - startX;
+      const rectHeight = endY - startY;
 
       ctx.save();
       ctx.beginPath();
-      ctx.lineWidth = 3;
-      ctx.fillStyle = '#4692ca4d';
+      ctx.fillStyle = options.color || 'rgba(70,146,202,0.3)';
       ctx.fillRect(startX, startY, rectWidth, rectHeight);
 
       ctx.restore();
     }
   },
 
-  destroy: function (chartInstance) {
+  destroy(chartInstance) {
     if (!chartInstance.$dragzone) return;
 
-    var props = chartInstance.$dragzone;
-    var node = props._node;
+    const props = chartInstance.$dragzone;
+    const node = props._node;
 
     node.removeEventListener('mousedown', props._mouseDownHandler);
     node.removeEventListener('mousemove', props._mouseMoveHandler);
@@ -127,5 +206,7 @@ var dragZonePlugin = {
   }
 };
 
+// Register chart.js plugin
 Chart.plugins.register(dragZonePlugin);
+
 export default dragZonePlugin;
