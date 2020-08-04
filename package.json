@@ -1,0 +1,25 @@
+{
+  "name": "chartjs-plugin-dragzone",
+  "version": "0.1.0",
+  "description": "Chart.js drag zone plugin",
+  "main": "dist/chartjs-plugin-dragzone.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "rollup -w -c rollup.config.js"
+  },
+  "keywords": [
+    "chart.js",
+    "drag"
+  ],
+  "author": "leey0818@gmail.com",
+  "license": "MIT",
+  "devDependencies": {
+    "@rollup/plugin-commonjs": "^14.0.0",
+    "@rollup/plugin-node-resolve": "^8.4.0",
+    "rollup": "^2.23.0"
+  },
+  "dependencies": {},
+  "peerDependencies": {
+    "chart.js": "2.8.0"
+  }
+}
