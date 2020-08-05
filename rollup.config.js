@@ -25,6 +25,7 @@ export default {
     }),
     resolve(),
     babel({
+      babelHelpers: 'bundled',
       presets: ['@babel/preset-env'],
     })
   ]

@@ -1,21 +1,27 @@
 {
   "name": "chartjs-plugin-dragzone",
   "version": "0.1.0",
-  "description": "Chart.js drag zone plugin",
-  "author": "leey0818@gmail.com",
+  "description": "A Chart.js plugin to provide drag area selection",
+  "author": {
+    "name": "leey0818",
+    "email": "leey0818@gmail.com"
+  },
   "license": "MIT",
   "main": "dist/chartjs-plugin-dragzone.js",
   "keywords": [
     "chart.js",
-    "drag"
+    "plugin",
+    "drag",
+    "selection"
   ],
   "repository": {
     "type": "git",
     "url": "https://github.com/leey0818/chartjs-plugin-dragzone"
   },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "rollup -w -c rollup.config.js"
+    "dev": "rollup -c -w",
+    "build": "rollup -c",
+    "prepublish": "yarn build"
   },
   "devDependencies": {
     "@babel/core": "^7.0.0",

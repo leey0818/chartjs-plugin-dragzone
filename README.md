@@ -1,5 +1,7 @@
 # chartjs-plugin-dragzone
 
+![npm](https://img.shields.io/npm/v/chartjs-plugin-dragzone)
+
 A Chart.js plugin to provide drag area selection.
 
 ## Installation
