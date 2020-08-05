@@ -10,7 +10,13 @@ Install package with `npm`:
 npm install chartjs-plugin-dragzone
 ```
 
-## Configuration
+## Usage
+
+Import the module from where you want to use it.
+
+```javascript
+import 'chartjs-plugin-dragzone';
+```
 
 Add plugin options to chart configuration.
 

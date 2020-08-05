@@ -93,6 +93,7 @@ function isClickArea(direction, startX, endX, startY, endY) {
 // Set plugin default global options
 Chart.defaults.global.plugins.dragzone = {
   direction: 'all',
+  color: '#4692ca4d',
 };
 
 const dragZonePlugin = {
@@ -194,7 +195,7 @@ const dragZonePlugin = {
 
       ctx.save();
       ctx.beginPath();
-      ctx.fillStyle = options.color || 'rgba(70,146,202,0.3)';
+      ctx.fillStyle = options.color;
       ctx.fillRect(startX, startY, rectWidth, rectHeight);
 
       ctx.restore();
