@@ -90,6 +90,11 @@ function isClickArea(direction, startX, endX, startY, endY) {
   return false;
 }
 
+// Set plugin default global options
+Chart.defaults.global.plugins.dragzone = {
+  direction: 'all',
+};
+
 const dragZonePlugin = {
   id: 'dragzone',
 
