@@ -141,27 +141,31 @@ const dragZonePlugin = {
         bottom: endY,
       };
 
-      const data = chartInstance.getDatasetMeta(0).data;
-      const datasets = [];
+      const datasets = chartInstance.data.datasets;
+      const datasetPoints = [];
 
-      for (let i = 0; i < data.length; i++) {
-        const point = data[i];
+      for (let i = 0; i < datasets.length; i++) {
+        const data = chartInstance.getDatasetMeta(i).data;
 
-        // check point in drag area
-        if (_isPointInArea(point._model, area)) {
-          let datas = datasets[point._datasetIndex];
+        for (let j = 0; j < data.length; j++) {
+          const point = data[j];
 
-          if (datas === undefined) {
-            datas = [];
-            datasets[point._datasetIndex] = datas;
+          // check point in drag area
+          if (_isPointInArea(point._model, area)) {
+            let datas = datasetPoints[point._datasetIndex];
+
+            if (datas === undefined) {
+              datas = [];
+              datasetPoints[point._datasetIndex] = datas;
+            }
+
+            datas.push(getPointData(chartInstance, point));
           }
-
-          datas.push(getPointData(chartInstance, point));
         }
       }
 
       if (typeof options.onDragSelection === 'function') {
-        options.onDragSelection(datasets);
+        options.onDragSelection(datasetPoints);
       }
     };
 
