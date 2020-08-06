@@ -1,6 +1,6 @@
 {
   "name": "chartjs-plugin-dragzone",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "A Chart.js plugin to provide drag area selection",
   "author": {
     "name": "leey0818",
@@ -21,7 +21,7 @@
   "scripts": {
     "dev": "rollup -c -w",
     "build": "rollup -c",
-    "prepublish": "yarn build"
+    "prepare": "yarn build"
   },
   "devDependencies": {
     "@babel/core": "^7.0.0",
