@@ -1,6 +1,6 @@
 # chartjs-plugin-dragzone
 
-![npm](https://img.shields.io/npm/v/chartjs-plugin-dragzone)
+[![npm](https://img.shields.io/npm/v/chartjs-plugin-dragzone)](https://www.npmjs.com/package/chartjs-plugin-dragzone)
 
 A Chart.js plugin to provide drag area selection.
 
