@@ -1,6 +1,6 @@
 {
   "name": "chartjs-plugin-dragzone",
-  "version": "0.1.1",
+  "version": "1.0.0",
   "description": "A Chart.js plugin to provide drag area selection",
   "author": {
     "name": "leey0818",
@@ -8,6 +8,8 @@
   },
   "license": "MIT",
   "main": "dist/chartjs-plugin-dragzone.js",
+  "module": "dist/chartjs-plugin-dragzone.esm.js",
+  "types": "types/index.d.ts",
   "keywords": [
     "chart.js",
     "plugin",
@@ -24,16 +26,13 @@
     "prepare": "yarn build"
   },
   "devDependencies": {
-    "@babel/core": "^7.0.0",
-    "@babel/preset-env": "^7.11.0",
-    "@rollup/plugin-babel": "^5.1.0",
-    "@rollup/plugin-commonjs": "^14.0.0",
-    "@rollup/plugin-node-resolve": "^8.4.0",
-    "lodash-es": "^4.17.15",
-    "rollup": "^2.23.0"
+    "@rollup/plugin-node-resolve": "^13.0.0",
+    "chart.js": "^3.9.1",
+    "lodash-es": "^4.17.21",
+    "rollup": "^2.52.1"
   },
   "dependencies": {},
   "peerDependencies": {
-    "chart.js": "2.8.0"
+    "chart.js": "^3.0.0"
   }
 }

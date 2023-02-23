@@ -1,3 +1,3 @@
 import DragzonePlugin from './plugin.dragzone';
 
-export default DragzonePlugin;
+export { DragzonePlugin as default };
