@@ -5,6 +5,8 @@
 A Chart.js plugin to provide drag area selection.
 Compatible with Chart.js v3 (>= v1.0.0)
 
+![how to work](./sample.gif)
+
 ## Installation
 
 Install package with `npm`:
@@ -44,7 +46,7 @@ plugins: {
     // It is stored for each dataset.
     onDragSelection: function (datasets, chart) {
       const datas = datasets[0];
-      console.log('Selected data: ' + datas.length);
+      alert('Selected data: ' + JSON.stringify(datas));
     }
   }
 }
